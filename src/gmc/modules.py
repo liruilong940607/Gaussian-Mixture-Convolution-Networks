@@ -134,21 +134,21 @@ class Convolution(torch.nn.modules.Module):
         renderings = gmc.render.colour_mapped(renderings.cpu().numpy(), clamp[0], clamp[1])
         return renderings[:, :, :3]
 
-    def debug_render3d(self, image_size: int = 80, clamp: typing.Tuple[float, float] = (-0.3, 0.3), camera: typing.Optional[typing.Dict] = None) -> Tensor:
-        vis = gm_vis.GMVisualizer(False, image_size, image_size)
-        if camera is not None:
-            vis.set_camera_lookat(**camera)
-        else:
-            vis.set_camera_auto(True)
-        vis.set_density_rendering(True)
-        vis.set_density_range_manual(clamp[0], clamp[1])
+    # def debug_render3d(self, image_size: int = 80, clamp: typing.Tuple[float, float] = (-0.3, 0.3), camera: typing.Optional[typing.Dict] = None) -> Tensor:
+    #     vis = gm_vis.GMVisualizer(False, image_size, image_size)
+    #     if camera is not None:
+    #         vis.set_camera_lookat(**camera)
+    #     else:
+    #         vis.set_camera_auto(True)
+    #     vis.set_density_rendering(True)
+    #     vis.set_density_range_manual(clamp[0], clamp[1])
 
-        kernels = self.kernels()
-        renderings = gmc.render.render3d(kernels,
-                                         batches=(0, min(5, gm.n_batch(kernels))), layers=(0, min(5, gm.n_layers(kernels))),
-                                         width=image_size, height=image_size, gm_vis_object=vis)
-        vis.finish()
-        return renderings.transpose(1, 2).contiguous().view(image_size * renderings.shape[0], image_size * renderings.shape[1], 4)[:, :, :3]
+    #     kernels = self.kernels()
+    #     renderings = gmc.render.render3d(kernels,
+    #                                      batches=(0, min(5, gm.n_batch(kernels))), layers=(0, min(5, gm.n_layers(kernels))),
+    #                                      width=image_size, height=image_size, gm_vis_object=vis)
+    #     vis.finish()
+    #     return renderings.transpose(1, 2).contiguous().view(image_size * renderings.shape[0], image_size * renderings.shape[1], 4)[:, :, :3]
 
     def debug_save3d(self, base_name: str):
         kernel = self.kernels()
@@ -236,21 +236,21 @@ class ReLUFitting(torch.nn.modules.Module):
         images = gmc.render.colour_mapped(images.cpu().numpy(), clamp[0], clamp[1])
         return images[:, :, :3]
 
-    def debug_render3d(self, image_size: int = 80, clamp: typing.Tuple[float, float] = (-0.1, 0.1), camera: typing.Optional[typing.Dict] = None):
-        vis = gm_vis.GMVisualizer(False, image_size, image_size)
-        if camera is not None:
-            vis.set_camera_lookat(**camera)
-        else:
-            vis.set_camera_auto(True)
-        vis.set_density_rendering(True)
-        vis.set_density_range_manual(clamp[0], clamp[1])
+    # def debug_render3d(self, image_size: int = 80, clamp: typing.Tuple[float, float] = (-0.1, 0.1), camera: typing.Optional[typing.Dict] = None):
+    #     vis = gm_vis.GMVisualizer(False, image_size, image_size)
+    #     if camera is not None:
+    #         vis.set_camera_lookat(**camera)
+    #     else:
+    #         vis.set_camera_auto(True)
+    #     vis.set_density_rendering(True)
+    #     vis.set_density_range_manual(clamp[0], clamp[1])
 
-        last_in = gmc.render.render3d(self.last_in[0], batches=(0, 1), layers=(0, 5), gm_vis_object=vis)
-        prediction = gmc.render.render3d(self.last_out[0], batches=(0, 1), layers=(0, 5), gm_vis_object=vis)
-        vis.finish()
+    #     last_in = gmc.render.render3d(self.last_in[0], batches=(0, 1), layers=(0, 5), gm_vis_object=vis)
+    #     prediction = gmc.render.render3d(self.last_out[0], batches=(0, 1), layers=(0, 5), gm_vis_object=vis)
+    #     vis.finish()
 
-        images = torch.cat([last_in.view(image_size * last_in.shape[0] * last_in.shape[1], image_size, 4), prediction.view(image_size * last_in.shape[0] * last_in.shape[1], image_size, 4)], dim=1)
-        return images[:, :, :3]
+    #     images = torch.cat([last_in.view(image_size * last_in.shape[0] * last_in.shape[1], image_size, 4), prediction.view(image_size * last_in.shape[0] * last_in.shape[1], image_size, 4)], dim=1)
+    #     return images[:, :, :3]
 
     def debug_save3d(self, base_name: str, n_batch_samples: int = 1, n_layers: int = None):
         gmio.write_gm_to_ply2(self.last_in[0][0:n_batch_samples, 0:n_layers], f"{base_name}_in")

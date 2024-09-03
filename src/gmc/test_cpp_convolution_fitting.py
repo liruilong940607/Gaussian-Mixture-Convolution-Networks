@@ -32,9 +32,9 @@ class CppConvolutionTest(unittest.TestCase):
         cpp_result2 = cpp_convolution_fitting.apply(gm1, gm2, 4*5)
 
         # plt.imshow(debug_render(gm1))
-        # plt.show()
+        # plt.savefig("gm1.png")
         # plt.imshow(debug_render(gm2))
-        # plt.show()
+        # plt.savefig("gm2.png")
         # plt.imshow(debug_render(python_result))
         # plt.show()
         # plt.imshow(debug_render(cpp_result))

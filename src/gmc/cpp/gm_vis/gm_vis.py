@@ -3,8 +3,10 @@ from enum import IntEnum
 import numpy as np
 
 import torch
-import gmc.cpp.gm_vis.build.pygmvis as pygmvis
-
+try:
+    import gmc.cpp.gm_vis.build.pygmvis as pygmvis
+except ImportError:
+    pygmvis = None
 
 def onetime_density_render(width: int,
                          height: int,

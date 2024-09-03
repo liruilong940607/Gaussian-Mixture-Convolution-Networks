@@ -3,7 +3,6 @@ import torch
 import numpy as np
 import scipy.signal
 
-import gmc.render as render
 import gmc.mixture as gm
 import gmc.modules as gmc
 import gmc.mat_tools as mat_tools

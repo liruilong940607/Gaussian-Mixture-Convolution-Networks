@@ -12,7 +12,7 @@ import gmc.cpp.gm_vis.gm_vis as gm_vis
 
 from gmc import colourmap
 
-mpl.use('Qt5Agg')
+mpl.use('Agg')
 
 gamma_correction = 1/2.2
 
@@ -61,41 +61,41 @@ def render(mixture: Tensor, constant: Tensor, batches: index_range = (0, None), 
     return rendering
 
 
-def render3d(mixture: Tensor, batches: index_range = (0, None), layers: index_range = (0, None),
-             width: int = 100, height: int = 100, gm_vis_object: gm_vis.GMVisualizer = None) -> Tensor:
-    assert gm.n_dimensions(mixture) == 3
-    assert gm.is_valid_mixture(mixture)
+# def render3d(mixture: Tensor, batches: index_range = (0, None), layers: index_range = (0, None),
+#              width: int = 100, height: int = 100, gm_vis_object: gm_vis.GMVisualizer = None) -> Tensor:
+#     assert gm.n_dimensions(mixture) == 3
+#     assert gm.is_valid_mixture(mixture)
 
-    end_gm_vis_object = False
-    if gm_vis_object is None:
-        gm_vis_object = gm_vis.GMVisualizer(False, width, height)
-        gm_vis_object.set_camera_auto(True)
-        gm_vis_object.set_density_rendering(True)
-        end_gm_vis_object = True
+#     end_gm_vis_object = False
+#     if gm_vis_object is None:
+#         gm_vis_object = gm_vis.GMVisualizer(False, width, height)
+#         gm_vis_object.set_camera_auto(True)
+#         gm_vis_object.set_density_rendering(True)
+#         end_gm_vis_object = True
 
-    layer_start = layers[0]
-    if layer_start is None:
-        layer_start = 0
-    layer_end = layers[1]
-    if layer_end is None:
-        layer_end = gm.n_layers(mixture)
+#     layer_start = layers[0]
+#     if layer_start is None:
+#         layer_start = 0
+#     layer_end = layers[1]
+#     if layer_end is None:
+#         layer_end = gm.n_layers(mixture)
 
-    rendering_list = list()
-    for lid in range(layer_start, layer_end):
-        m = mixture[batches[0]:batches[1], lid:(lid+1), :, :]
-        gm_vis_object.set_gaussian_mixtures(m.detach().cpu())
-        rendering_list.append(torch.from_numpy(gm_vis_object.render()))
+#     rendering_list = list()
+#     for lid in range(layer_start, layer_end):
+#         m = mixture[batches[0]:batches[1], lid:(lid+1), :, :]
+#         gm_vis_object.set_gaussian_mixtures(m.detach().cpu())
+#         rendering_list.append(torch.from_numpy(gm_vis_object.render()))
 
-    rendering_tensor = torch.cat(rendering_list, dim=1)
-    n_b = rendering_tensor.shape[0]
-    height = rendering_tensor.shape[2]
-    width = rendering_tensor.shape[3]
-    n_l = len(rendering_list)
+#     rendering_tensor = torch.cat(rendering_list, dim=1)
+#     n_b = rendering_tensor.shape[0]
+#     height = rendering_tensor.shape[2]
+#     width = rendering_tensor.shape[3]
+#     n_l = len(rendering_list)
 
-    if end_gm_vis_object:
-        gm_vis_object.finish()
+#     if end_gm_vis_object:
+#         gm_vis_object.finish()
 
-    return rendering_tensor
+#     return rendering_tensor
 
 
 def render_with_relu(mixture: Tensor, constant: Tensor,
