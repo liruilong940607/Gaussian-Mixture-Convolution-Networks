@@ -13,5 +13,5 @@ if platform.system() == "Windows":
 else:
     cuda_extra_cflags = ["-O3", "-ffast-math", "-march=native", "-std=c++17", "-DGPE_LIMIT_N_REDUCTION", "-DNDEBUG"]
     cpp_extra_cflags = ["-fopenmp", "-ffast-math", " -fno-finite-math-only", "-O4", "-march=native", "--std=c++17", "-DGPE_LIMIT_N_REDUCTION", "-DNDEBUG"]  # , "-DNDEBUG", "-DGPE_NO_CUDA_ERROR_CHECKING"
-    cuda_extra_cuda_cflags.append("-Xcompiler -fopenmp -ccbin /usr/bin/g++-9 -DNDEBUG")  #  -DNDEBUG"
+    cuda_extra_cuda_cflags.append("-Xcompiler -fopenmp -ccbin /usr/bin/g++ -DNDEBUG")  #  -DNDEBUG"
 

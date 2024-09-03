@@ -19,7 +19,7 @@ string(APPEND CMAKE_CUDA_FLAGS_RELEASE " --generate-line-info -Xcompiler '-O4,-m
 #string(APPEND CMAKE_CUDA_FLAGS_DEBUG " -g -G")
 
 # gcc 10 is buggy (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100102)
-string(APPEND CMAKE_CUDA_FLAGS " -ccbin /usr/bin/g++-9")
+string(APPEND CMAKE_CUDA_FLAGS " -ccbin /usr/bin/g++")
 
 # ASan:
 #string(APPEND CMAKE_CUDA_FLAGS " -Xcompiler -fsanitize=address -Xcompiler -fno-omit-frame-pointer")
@@ -34,14 +34,17 @@ string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O4 -march=native")
 # if it's not installed, you'll get errors, that openmp or other stuff is not installed (hard to track down)
 #string(APPEND CMAKE_EXE_LINKER_FLAGS " -fuse-ld=lld")
 
-set (MY_ANACONDA_PATH "/home/madam/bin/anaconda3")
+set (MY_ANACONDA_PATH "/home/ruilongli/miniforge3/envs/gmm")
 
 list(APPEND CMAKE_PREFIX_PATH "${MY_ANACONDA_PATH}/")
-list(APPEND CMAKE_PREFIX_PATH "${MY_ANACONDA_PATH}/lib/python3.8/site-packages/torch/")
+list(APPEND CMAKE_PREFIX_PATH "${MY_ANACONDA_PATH}/lib/python3.10/site-packages/torch/")
 
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 find_package(OpenMP REQUIRED)
 find_package(Torch REQUIRED)
 find_package(Catch2 REQUIRED)
+
+include_directories(${Python3_INCLUDE_DIRS})
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_compile_definitions(GMC_CMAKE_TEST_BUILD)
@@ -56,7 +59,7 @@ find_package(Qt5 COMPONENTS Core Widgets Test REQUIRED)
 
 
 set(MY_INCLUDE_PATHS
-    ${MY_ANACONDA_PATH}/include/python3.8/
+    ${MY_ANACONDA_PATH}/include/python3.10/
     ../glm
     ../yamc/include
     ../gcem/include
@@ -89,7 +92,7 @@ set(MATH_SOURCES
     math/symeig_cuda.cpp
     math/symeig_cuda.cu)
 add_library(math ${MATH_HEADERS} ${MATH_SOURCES})
-target_link_libraries(math PUBLIC OpenMP::OpenMP_CXX torch common)
+target_link_libraries(math PUBLIC OpenMP::OpenMP_CXX torch common ${Python3_LIBRARIES})
 
 set(LBVH_HEADERS
     lbvh/aabb.h
@@ -101,7 +104,7 @@ set(LBVH_HEADERS
     lbvh/query.h
     lbvh/utility.h)
 add_library(lbvh ${LBVH_HEADERS} lbvh/bvh.cu)
-target_link_libraries(lbvh PUBLIC OpenMP::OpenMP_CXX torch math common)
+target_link_libraries(lbvh PUBLIC OpenMP::OpenMP_CXX torch math common ${Python3_LIBRARIES})
 
 set(UTIL_HEADERS
     util/algorithms.h
@@ -137,7 +140,7 @@ set(EVALUATE_INVERSED_SOURCES
     evaluate_inversed/evaluate_inversed.cpp
 )
 add_library(evaluate_inversed ${EVALUATE_INVERSED_HEADERS} ${EVALUATE_INVERSED_SOURCES})
-target_link_libraries(evaluate_inversed PUBLIC OpenMP::OpenMP_CXX torch math common)
+target_link_libraries(evaluate_inversed PUBLIC OpenMP::OpenMP_CXX torch math common ${Python3_LIBRARIES})
 
 set(PIECES_HEADERS
     pieces/pieces.h
@@ -150,7 +153,7 @@ set(PIECES_SOURCES
     pieces/symeig.cu
 )
 add_library(pieces ${PIECES_HEADERS} ${PIECES_SOURCES})
-target_link_libraries(pieces PUBLIC OpenMP::OpenMP_CXX torch math common)
+target_link_libraries(pieces PUBLIC OpenMP::OpenMP_CXX torch math common ${Python3_LIBRARIES})
 
 set(BVH_MHEM_FIT_HEADERS
     bvh_mhem_fit/Config.h
@@ -198,7 +201,7 @@ set(BVH_MHEM_FIT_SOURCES
     bvh_mhem_fit/implementation_backward_instances/template_instance_implementation_backward_16_double_3.cu
 )
 add_library(bvh_mhem_fit ${BVH_MHEM_FIT_HEADERS} ${BVH_MHEM_FIT_SOURCES})
-target_link_libraries(bvh_mhem_fit PUBLIC OpenMP::OpenMP_CXX torch math lbvh common pieces)
+target_link_libraries(bvh_mhem_fit PUBLIC OpenMP::OpenMP_CXX torch math lbvh common pieces ${Python3_LIBRARIES})
 
 set(BVH_MHEM_FIT_ALPHA_HEADERS
     bvh_mhem_fit_alpha/Config.h
@@ -246,7 +249,7 @@ set(BVH_MHEM_FIT_ALPHA_SOURCES
     bvh_mhem_fit_alpha/implementation_backward_instances/template_instance_implementation_backward_16_double_3.cpp
 )
 add_library(bvh_mhem_fit_alpha ${BVH_MHEM_FIT_ALPHA_HEADERS} ${BVH_MHEM_FIT_ALPHA_SOURCES})
-target_link_libraries(bvh_mhem_fit_alpha PUBLIC OpenMP::OpenMP_CXX torch math lbvh common)
+target_link_libraries(bvh_mhem_fit_alpha PUBLIC OpenMP::OpenMP_CXX torch math lbvh common ${Python3_LIBRARIES})
 target_compile_definitions(bvh_mhem_fit_alpha PUBLIC GPE_AUTODIFF)
 
 
@@ -270,7 +273,7 @@ set(CONVOLUTION_SOURCES
     convolution/implementation_backward_instances/template_instance_implementation_backward_1_double_3.cu
 )
 add_library(convolution ${CONVOLUTION_HEADERS} ${CONVOLUTION_SOURCES})
-target_link_libraries(convolution PUBLIC OpenMP::OpenMP_CXX torch math common pieces)
+target_link_libraries(convolution PUBLIC OpenMP::OpenMP_CXX torch math common pieces ${Python3_LIBRARIES})
 
 set(CONVOLUTION_FITTING_HEADERS
     convolution_fitting/Config.h
@@ -321,7 +324,7 @@ set(CONVOLUTION_FITTING_SOURCES
 #    convolution_fitting/implementation_backward_instances/template_instance_implementation_backward_8_double_3.cu
 )
 add_library(convolution_fitting ${CONVOLUTION_FITTING_HEADERS} ${CONVOLUTION_FITTING_SOURCES})
-target_link_libraries(convolution_fitting PUBLIC OpenMP::OpenMP_CXX torch)
+target_link_libraries(convolution_fitting PUBLIC OpenMP::OpenMP_CXX torch ${Python3_LIBRARIES})
 
 
 # https://gitlab.kitware.com/cmake/cmake/-/issues/16915
@@ -334,13 +337,13 @@ if ( TARGET Qt5::Core )
 endif()
 
 add_executable(0_test_evaluate_inversed evaluate_inversed/test_evaluate_inversed.cpp)
-target_link_libraries(0_test_evaluate_inversed PUBLIC OpenMP::OpenMP_CXX torch Qt5::Widgets evaluate_inversed math common)
+target_link_libraries(0_test_evaluate_inversed PUBLIC OpenMP::OpenMP_CXX torch Qt5::Widgets evaluate_inversed math common ${Python3_LIBRARIES})
 
 add_executable(0_test_bvh_fit bvh_mhem_fit/test_bvh_fit.cpp)
-target_link_libraries(0_test_bvh_fit PUBLIC OpenMP::OpenMP_CXX torch Qt5::Widgets bvh_mhem_fit evaluate_inversed math lbvh common)
+target_link_libraries(0_test_bvh_fit PUBLIC OpenMP::OpenMP_CXX torch Qt5::Widgets bvh_mhem_fit evaluate_inversed math lbvh common ${Python3_LIBRARIES})
 
 add_executable(1_test_convolution_fitting convolution_fitting/test.cpp)
-target_link_libraries(1_test_convolution_fitting PUBLIC OpenMP::OpenMP_CXX torch Qt5::Widgets convolution_fitting convolution evaluate_inversed math common)
+target_link_libraries(1_test_convolution_fitting PUBLIC OpenMP::OpenMP_CXX torch Qt5::Widgets convolution_fitting convolution evaluate_inversed math common ${Python3_LIBRARIES})
 
 set(MATRIX_INVERSE_HEADERS
 )
@@ -349,7 +352,7 @@ set(MATRIX_INVERSE_SOURCES
     math/matrix_inverse_cuda.cu
 )
 add_library(matrix_inverse ${MATRIX_INVERSE_HEADERS} ${MATRIX_INVERSE_SOURCES})
-target_link_libraries(matrix_inverse PUBLIC OpenMP::OpenMP_CXX torch)
+target_link_libraries(matrix_inverse PUBLIC OpenMP::OpenMP_CXX torch ${Python3_LIBRARIES})
 
 
 #unit tests:
@@ -372,7 +375,7 @@ set(UNITTESTS_SOURCES
     unittests/grad_evaluate_inversed.cpp
 )
 add_executable(0_unittests ${UNITTESTS_SOURCES} ${UNITTESTS_HEADERS})
-target_link_libraries(0_unittests PUBLIC Catch2::Catch2 OpenMP::OpenMP_CXX torch Qt5::Widgets bvh_mhem_fit_alpha bvh_mhem_fit convolution_fitting evaluate_inversed math common)
+target_link_libraries(0_unittests PUBLIC Catch2::Catch2 OpenMP::OpenMP_CXX torch Qt5::Widgets bvh_mhem_fit_alpha bvh_mhem_fit convolution_fitting evaluate_inversed math common ${Python3_LIBRARIES})
 target_compile_definitions(0_unittests PUBLIC GPE_AUTODIFF)
 
 include(CTest)
@@ -388,5 +391,5 @@ set(BENCHMARK_SOURCES
     benchmarks/evaluate_inversed.cpp
 )
 add_executable(0_benchmarks ${BENCHMARK_SOURCES} ${BENCHMARK_HEADERS})
-target_link_libraries(0_benchmarks PUBLIC Catch2::Catch2 OpenMP::OpenMP_CXX torch Qt5::Widgets convolution_fitting pieces evaluate_inversed math common)
+target_link_libraries(0_benchmarks PUBLIC Catch2::Catch2 OpenMP::OpenMP_CXX torch Qt5::Widgets convolution_fitting pieces evaluate_inversed math common ${Python3_LIBRARIES})
 
