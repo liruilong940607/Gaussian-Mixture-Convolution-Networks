@@ -165,6 +165,27 @@ class Convolution(torch.nn.modules.Module):
             kernels = self.kernels()
             out_mixtures = cpp_convolution_fitting.apply(x, kernels, self.n_fitting_components)
 
+            # x : [batch, n_in, n_components_in, 7]
+            # kernels : [n_out, n_in, n_components_ke, 7]
+            def convolution(x, kernels):
+                batch = x.shape[0]
+                n_out = kernels.shape[0]
+                
+                pi_in, mu_in, sigma_in = torch.split(x, [1, 2, 4], dim=-1)
+                pi_ke, mu_ke, sigma_ke = torch.split(kernels, [1, 2, 4], dim=-1)
+
+                # [batch, n_out, n_in, n_components_in, n_components_ke (5), 1]
+                pi_o = (pi_in[:, None, :, :, None, :] * pi_ke[None, :, :, None, :, :]).reshape(batch, n_out, -1, self.n_fitting_components, 1)
+                mu_o = (mu_in[:, None, :, :, None, :] + mu_ke[None, :, :, None, :, :]).reshape(batch, n_out, -1, self.n_fitting_components, 2)
+                sigma_o = (sigma_in[:, None, :, :, None, :] + sigma_ke[None, :, :, None, :, :]).reshape(batch, n_out, -1, self.n_fitting_components, 4)
+
+                pi_o = torch.prod(pi_o, dim=2)
+                mu_o = torch.sum(mu_o, dim=2)
+                sigma_o = torch.sum(sigma_o, dim=2)
+                return torch.cat([pi_o, mu_o, sigma_o], dim=-1)
+            
+            out_mixtures = convolution(x, kernels)
+            
         n_batch = x_constant.shape[0]
         n_channels_input = gm.n_layers(x)
         n_channels_out = self.n_channels_out
